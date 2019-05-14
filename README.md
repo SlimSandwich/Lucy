@@ -34,3 +34,8 @@ Lucy's main features are: Welcoming people who join a server, allowing them to a
 * **?quotes** - Lists all the quotes Lucy can post, along with their position. - **Owner Only**
 
 * **?delquote [position]** - Deletes the quote in a given position. - **Owner Only**
+
+
+## Using Lucy yourself:
+
+If you want to use Lucy yourself, the only things you will need to do manually are add the bot token and the owner ID to the data.json file. Everything else can be set through commands.
