@@ -1,0 +1,17 @@
+{
+    "TOKEN": "",
+    "ownerIDs": [
+    ],
+    "welcomeChannelID": "",
+    "welcomeMessage": [    
+    ],
+    "goodbyeChannelID": "",
+    "goodbyeMessage": "",
+    "quoteChannelID": "",
+    "botChannels": [
+    ],
+    "Roles": {
+	},
+    "quotePool": [
+	]
+}
