@@ -37,7 +37,6 @@ def saveInfo():
 @bot.command()
 @commands.check(TestOwner)
 @commands.check(TestChannel)
-
 async def welcomemessage(context, *, message):
 	message = message.replace('%u', '{0}')
 	data['welcomeMessage'][0] = message
