@@ -3,11 +3,11 @@ import json
 import asyncio
 from secrets import randbelow
 from discord.ext import commands
-
+# opens the json file to grab standard information, along with the quote pool
 jsonPath = 'data.json'
 with open(jsonPath) as fopen:
 	data = json.load(fopen)
-	
+# setting default prefix for the bot, change to whatever you want within reason	
 bot = commands.Bot(command_prefix = '?')
 
 	
@@ -30,11 +30,14 @@ def TestChannel(ctx):
 def saveInfo():
 	with open(jsonPath, 'w') as outFile:
 		json.dump(data, outFile, indent=4)
-	
-	
+
+# ---------------------------------------------------------------------------------------------------	
+# Allows the server owner to change the welcome message (whenever a user joins) to whatever they want
+# Also has the ability to add an image to the message, for extra flair
 @bot.command()
 @commands.check(TestOwner)
 @commands.check(TestChannel)
+
 async def welcomemessage(context, *, message):
 	message = message.replace('%u', '{0}')
 	data['welcomeMessage'][0] = message
@@ -54,7 +57,7 @@ async def welcomemessage(context, *, message):
 	saveInfo()
 	await context.send('I will now welcome new people with that message!')
 	
-	
+# Displays an message whenever someone leaves the server. No image capability
 @bot.command()
 @commands.check(TestOwner)
 @commands.check(TestChannel)
@@ -64,7 +67,8 @@ async def goodbyemessage(context, *, message):
 	await context.send('I will now say that when someone leaves!')
 	saveInfo()
 
-	
+# Gives the server owner the ability to set where Lucy will greet, send off, post quotes.
+# Also has the added function of setting specific channels where Lucy will listen for commands
 @bot.command()
 @commands.check(TestOwner)
 async def setchannel(context, type):
@@ -92,7 +96,7 @@ async def setchannel(context, type):
 		
 	saveInfo()
 	
-	
+# Allows the server owner to add a rank	
 @bot.command()
 @commands.check(TestOwner)
 @commands.check(TestChannel)
@@ -110,7 +114,7 @@ async def addrank(context, roleName):
 		
 	saveInfo()
 	
-	
+# Allows the server owner to remove a rank	
 @bot.command()
 @commands.check(TestOwner)
 @commands.check(TestChannel)
@@ -129,7 +133,7 @@ async def delrank(context, *roleNames):
 	
 	saveInfo()
 
-	
+# Allows the server owner to edit the message given when joining or leaving a rank	
 @bot.command()
 @commands.check(TestOwner)
 @commands.check(TestChannel)
@@ -139,35 +143,35 @@ async def editrank(context, *args):
 		return
 		
 	roleName = args[0]
-	if roleName not in data['Roles']:
+	if roleName not in data['Roles']: # Looks for the role given. If the role doesn't exist, it gives an error message
 		await context.send('I could not find a rank with that name. Are you sure it exists?')
 		return
 		
 	messageType = args[1]
-	if messageType not in ['join', 'leave']:
+	if messageType not in ['join', 'leave']: # Looks for the command "join" or "leave". If neither are given, it gives an error message
 		await context.send('Your second argument was invalid. Please use either **join** or **leave**')
 		return
 		
 	editType = args[2]
-	if editType not in ['message', 'image']:
+	if editType not in ['message', 'image']: # Looks for the command "message" or "image". If neither are given, it gives an error message
 		await context.send('Your third argument was invalid. Please use either **message** or **image**')
 		return
 	
-	if editType == 'image':
+	if editType == 'image': # Asks the owner for an image to send when someone joins/leaves a rank
 		await context.send('Type an image link for me to send when someone {0}s a rank, or type remove to set it to nothing.'.format(messageType))
 		imgLink = await bot.wait_for('message', check=TestOwner)
 		imgLink = imgLink.content
 		
 		while 'http' not in imgLink:
-			if imgLink == 'remove':
+			if imgLink == 'remove': # Removes the image from the join/leaveing message
 				img = ''
 				await context.send('I will not send an image when someone {0}s **{1}** anymore!'.format(messageType, roleName))
 				break
-			
+			# Error message
 			await context.send('That was not a valid link. Please try again.')
 			imgLink = await client.wait_for('message', check=TestOwner)
 			imgLink = imgLink.content
-			
+		# Saves the image to the join/leave array	
 		if messageType == 'join':
 			data['Roles'][roleName][2] = imgLink
 		else:
@@ -180,17 +184,17 @@ async def editrank(context, *args):
 	
 		await context.send('I will now send that image whenever someone {0}s **{1}**!'.format(messageType, roleName))
 	
-	else:
+	else: # The server owner can set a custom message for Lucy to send when someone joins a rank, or can be left blank
 		await context.send('Type a custom message for me to send when someone {0}s a rank, or type remove to set it to nothing.'.format(messageType))
 		customMessage = await bot.wait_for('message', check=TestOwner)
 		customMessage = customMessage.content
 		customMessage = customMessage.replace('%u', '{0}')
 		customMessage = customMessage.replace('%r', '{1}')
-		
+		# Removes the custom message
 		if customMessage == 'remove':
 			customeMessage = ''
 			await context.send('I will now use the default message for when someone {0}s **{1}**!'.format(messageType, roleName))
-		
+		# Saves the message to the join/leave array
 		if messageType == 'join':
 			data['Roles'][roleName][1] = customMessage
 		else:
@@ -203,7 +207,7 @@ async def editrank(context, *args):
 			
 		await context.send('I will now send that message when someone {0}s **{1}**!'.format(messageType, roleName))
 		
-
+# Adds a quote to the quotepool
 @bot.command()
 @commands.check(TestOwner)
 @commands.check(TestChannel)
@@ -212,7 +216,7 @@ async def addquote(context, *, quote):
 	await context.send('Quote added!')
 	
 	saveInfo()
-	
+# Displays the quotepool
 @bot.command()
 @commands.check(TestOwner)
 @commands.check(TestChannel)
@@ -229,7 +233,7 @@ async def quotes(context):
 		
 	await context.send(msg)
 	
-	
+# Deletes a quote from the quotepool	
 @bot.command()
 @commands.check(TestOwner)
 @commands.check(TestChannel)
@@ -248,25 +252,25 @@ async def delquote(context, position):
 	
 	saveInfo()
 	
-	
+# Allows a user to join/leave the specified rank	
 @bot.command()
 @commands.check(TestChannel)
 async def rank(context, rankName):
 	if rankName not in data['Roles']:
-		await context.send('I could not find a rank with that name.')
+		await context.send('I could not find a rank with that name.') # Displays if the role was not found in the array
 		return
 	
 	role = context.guild.get_role(data['Roles'][rankName][0])
 	
 	if role not in context.author.roles:
 		await context.author.add_roles(role)
-		
+		# Grabs user and adds them to the role specified
 		if data['Roles'][rankName][1] == '':
 			await context.send('{0}, you have joined **{1}**'.format(context.author.mention, role.name))
 			
-		else:
+		else: # Gives the custom message instead of the default
 			await context.send(data['Roles'][rankName][1].format(context.author.mention, role.name))
-			
+		#If there is an image to display upon joining a role, this allows it to display	
 		if data['Roles'][rankName][2] != '':
 			embed = discord.Embed(title='', description = '')
 			embed = embed.set_image(url=data['Roles'][rankName][2])
@@ -274,19 +278,19 @@ async def rank(context, rankName):
 			
 	else:
 		await context.author.remove_roles(role)
-		
+		# Grabs user and removes them from the role specified
 		if data['Roles'][rankName][3] == '':
 			await context.send('{0}, you have left **{1}**'.format(context.author.mention, role.name))
 			
-		else:
+		else: # Gives the custom message instead of the default
 			await context.send(data['Roles'][rankName][3].format(context.author.mention, role.name))
-			
+		# If there is an image to display upon leaving a role, this allows it to display	
 		if data['Roles'][rankName][4] != '':
 			embed = discord.Embed(title='', description = '')
 			embed = embed.set_image(url=data['Roles'][rankName][4])
 			await context.send(content=None, embed=embed)
 
-			
+# Outputs the created roles			
 @bot.command()
 @commands.check(TestChannel)
 async def ranks(context):
@@ -298,7 +302,7 @@ async def ranks(context):
 	await context.send(msg)
 	
 	
-	
+# Displays the welcome message to a new user	
 @bot.event
 async def on_member_join(member):
 	if data['welcomeMessage'][0] == '' or data['welcomeChannelID'] == '':
@@ -312,7 +316,7 @@ async def on_member_join(member):
 		embed = embed.set_image(url=data['welcomeMessage'][1].format(member.mention))
 		await welcomeChannel.send(content=None, embed=embed)
 	
-
+# Displays the goodbye message when a user leaves the server
 @bot.event
 async def on_member_remove(member):
 	if data['goodbyeMessage'] == '' or data['goodbyeChannelID'] == '':
@@ -321,7 +325,7 @@ async def on_member_remove(member):
 	goodbyeChannel = bot.get_channel(data['goodbyeChannelID'])
 	await goodbyeChannel.send(data['goodbyeMessage'].format('**' + member.name + '**'))
 	
-	
+# Grabs and re-add users to a renamed/edited rank	
 @bot.event
 async def on_guild_role_update(before, after):
 	if before.name in data['Roles']:
@@ -330,7 +334,7 @@ async def on_guild_role_update(before, after):
 		
 		saveInfo()
 
-	
+# Displays in terminal when the bot has connected to the Discord API, and displays quotes to users at random	
 @bot.event
 async def on_ready():
 	print('------')
